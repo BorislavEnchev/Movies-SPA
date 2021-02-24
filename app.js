@@ -3,11 +3,7 @@ const db = firebase.firestore();
 
 const app = Sammy('#container', function() {
 
-    this.use('Handlebars', 'hbs'); 
-    Handlebars.registerHelper('buyTicket', function(event) {
-        console.log(event.target)
-    });
-    let movies = [];
+    this.use('Handlebars', 'hbs');
 
     // GET
     this.get('/home', function() {
@@ -355,8 +351,4 @@ function isValidHttpUrl(string) {
     }
   
     return url.protocol === "http:" || url.protocol === "https:";
-}
-
-function buyTicket(event) {
-    console.log(event.target)
 }
