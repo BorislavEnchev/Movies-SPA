@@ -7,7 +7,7 @@ const app = Sammy('#container', function() {
     Handlebars.registerHelper('buyTicket', function(event) {
         console.log(event.target)
     });
-    const movies = [];
+    let movies = [];
 
     // GET
     this.get('/home', function() {
@@ -50,10 +50,8 @@ const app = Sammy('#container', function() {
         db.collection('movies')
         .get()
         .then(response => {
-            response.docs.map((movie) => { 
-                movies.push({ id: movie.id, ...movie.data()});
-                // return { id: movie.id, ...movie.data()};
-                this.movies = movies;
+            response.docs.map((movie) => {
+                this.movies = response.docs.map((myMovie) => { return { id: myMovie.id, ...myMovie.data()}});
             });            
         })
         .then(response => {
@@ -62,7 +60,6 @@ const app = Sammy('#container', function() {
                 this.loadPartials({ movie: './templates/movies/movie.hbs' });
                 
                 this.partial('./templates/movies/cinema.hbs');
-                console.log(movies);
                 endRequest();
             });            
         })
@@ -155,7 +152,22 @@ const app = Sammy('#container', function() {
     });
 
     this.get('/buy/:id', function() {
-        //TODO: buy tickets
+        let { id } = this.params;
+        beginRequest();
+        db.collection('movies').doc(id).get()
+        .then(movie => {
+            let movieData = movie.data();
+            this.movie = {id, ...movieData};
+            let newTickets = this.movie.tickets - 1;
+            db.collection('movies').doc(id)
+            .update({tickets: newTickets})
+            .then(response => {
+                endRequest();
+                showInfo(`Bought ticket for ${this.movie.title}`);
+                this.redirect(`#/${this.params.origin}`);
+            });
+        })
+        .catch(showError);
     })
 
     //search for movies (path made to match the requirements if the task)
